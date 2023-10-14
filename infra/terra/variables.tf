@@ -2,6 +2,8 @@
 variable "aws_access_key" {}
 # AWSシークレットキー
 variable "aws_secret_key" {}
+# AWSアカウントID
+variable "aws_account_id" {}
 # リソース接頭辞
 variable "name_prefix" {}
 # VPC CIDR
