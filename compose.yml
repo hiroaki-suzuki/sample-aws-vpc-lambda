@@ -1,0 +1,20 @@
+services:
+  db:
+    platform: linux/x86_64
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sample
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      TZ: Asia/Tokyo
+    volumes:
+      - db:/var/lib/mysql
+      - "./server/mysql/initdb.d:/docker-entrypoint-initdb.d"
+      - "./server/mysql/log:/var/log/mysql"
+      - "./server/mysql/conf.d:/etc/mysql/conf.d"
+
+volumes:
+  db:
