@@ -9,7 +9,24 @@ LambdaをVPCと繋ぎ、プライベートサブネットにあるRDS Proxyを�
 フロントはVue3、バックエンドはSAM（Python）で構成する。
 DBはAurora MySQLを使用する。
 
-## 構築手順
+## ローカル実行
+
+1. Dockerのネットワークの作成
+    1. `docker network create vpc-lambda-network`
+2. DB環境の構築と起動
+    1. `docker-compose up`
+3. バックエンドの起動
+    1. `cd api`
+    2. `sam build`
+    3. `sam local start-api --docker-network vpc-lambda-network --parameter-overrides Timeout=10 DBHost=db DBUser=admin DBPassword=admin`
+        1. ファイルを編集した場合は`sam build`を実行する必要がある
+        2. IDEなどのファイル監視で、`sam build`が実行されるようにすると少し楽になる
+        3. JetBrains製品の場合は、File Watcherで`build.sh`を実行するようにすると自動でビルドが走るようにできる
+4. フロントの起動
+    1. `cd front`
+    2. `npm run dev`
+
+## AWS環境の構築手順
 
 1. Terraform実行
     1. `infra/terra/main.tfvars`を作成し、`infra/terra/variables.tf`の変数を設定する
