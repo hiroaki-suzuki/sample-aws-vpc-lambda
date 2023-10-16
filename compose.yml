@@ -15,6 +15,11 @@ services:
       - "./server/mysql/initdb.d:/docker-entrypoint-initdb.d"
       - "./server/mysql/log:/var/log/mysql"
       - "./server/mysql/conf.d:/etc/mysql/conf.d"
+    networks:
+      - vpc-lambda-network
 
 volumes:
   db:
+networks:
+  vpc-lambda-network:
+    external: true

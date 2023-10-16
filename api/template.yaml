@@ -16,11 +16,23 @@ Parameters:
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Description: Security Group for Lambda
+  DBHost:
+    Type: String
+    Description: DB Host
+  DBUser:
+    Type: String
+    Description: DB User
+  DBPassword:
+    Type: String
+    Description: DB Password
+  Timeout:
+    Type: Number
+    Description: Timeout for Lambda
+    Default: "3"
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: !Ref Timeout
     MemorySize: 128
 
     Tracing: Active
@@ -30,6 +42,11 @@ Globals:
         - !Ref LambdaSubnet2
       SecurityGroupIds:
         - !Ref LambdaSecurityGroup
+    Environment:
+      Variables:
+        DB_HOST: !Ref DBHost
+        DB_USER: !Ref DBUser
+        DB_PASSWORD: !Ref DBPassword
 
   Api:
     TracingEnabled: true
@@ -38,22 +55,50 @@ Globals:
       AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Requested-With,X-Requested-By,X-Api-Key'"
       AllowOrigin: "'*'"
       AllowCredentials: "'true'"
+
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  GetMessages:
+    Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello_world/
+      CodeUri: src/get_messages
       Handler: app.lambda_handler
       Runtime: python3.9
       Role: !Ref LambdaRole
       Architectures:
         - x86_64
+      Layers:
+        - !Ref AppLayer
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        GetMessages:
+          Type: Api
           Properties:
-            Path: /hello
+            Path: /message
             Method: get
+  SaveMessage:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/save_message
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Role: !Ref LambdaRole
+      Architectures:
+        - x86_64
+      Layers:
+        - !Ref AppLayer
+      Events:
+        SaveMessage:
+          Type: Api
+          Properties:
+            Path: /message
+            Method: post
+  AppLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: src/app_layer
+      CompatibleRuntimes:
+        - python3.9
+    Metadata:
+      BuildMethod: python3.9
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
@@ -68,13 +113,17 @@ Resources:
       ResourceGroupName:
         Ref: ApplicationResourceGroup
       AutoConfigurationEnabled: 'true'
+
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: Hello World Lambda Function ARN
-    Value: !GetAtt HelloWorldFunction.Arn
+  GetMessagesApi:
+    Description: API Gateway endpoint URL for Prod stage for Get Messages function
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/message/"
+  GetMessagesFunction:
+    Description: Get Messages Lambda Function ARN
+    Value: !GetAtt GetMessages.Arn
+  SaveMessageApi:
+    Description: API Gateway endpoint URL for Prod stage for Save Message function
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/message/"
+  SaveMessageFunction:
+    Description: Save Message Lambda Function ARN
+    Value: !GetAtt SaveMessage.Arn
