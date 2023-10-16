@@ -4,15 +4,15 @@ Description: >
   Sample for vpc lambda
 
 Parameters:
-  LambdaRole:
-    Type: String
-    Description: Role for Lambda
   LambdaSubnet1:
     Type: AWS::EC2::Subnet::Id
     Description: Subnet for Lambda
   LambdaSubnet2:
     Type: AWS::EC2::Subnet::Id
     Description: Subnet for Lambda
+  LambdaRole:
+    Type: String
+    Description: Role for Lambda
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Description: Security Group for Lambda
@@ -115,6 +115,9 @@ Resources:
       AutoConfigurationEnabled: 'true'
 
 Outputs:
+  ProductionApi:
+    Description: API Gateway endpoint URL for Prod stage
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
   GetMessagesApi:
     Description: API Gateway endpoint URL for Prod stage for Get Messages function
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/message/"
