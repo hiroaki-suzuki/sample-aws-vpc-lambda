@@ -15,14 +15,16 @@ DBはAurora MySQLを使用する。
     1. `docker network create vpc-lambda-network`
 2. DB環境の構築と起動
     1. `docker-compose up`
-3. バックエンドの起動
+3. S3バケットの作成
+    1. ローカル用にS3バケットを作成する
+4. バックエンドの起動
     1. `cd api`
     2. `sam build`
-    3. `sam local start-api --docker-network vpc-lambda-network --parameter-overrides Timeout=10 DBHost=db DBUser=admin DBPassword=admin`
+    3. `sam local start-api --docker-network vpc-lambda-network --parameter-overrides Timeout=10 DBHost=db DBUser=admin DBPassword=admin BackendBucketName=<ローカル用バケット名>`
         1. ファイルを編集した場合は`sam build`を実行する必要がある
         2. IDEなどのファイル監視で、`sam build`が実行されるようにすると少し楽になる
         3. JetBrains製品の場合は、File Watcherで`build.sh`を実行するようにすると自動でビルドが走るようにできる
-4. フロントの起動
+5. フロントの起動
     1. `cd front`
     2. `npm run dev`
 
@@ -48,21 +50,22 @@ DBはAurora MySQLを使用する。
     3. `sam deploy --guided --no-confirm-changeset`
         1. `Stack Name`は任意の名前をつける
         2. `AWS Region`はTerraformで作成したリージョンと同じにする
-        3. `LambdaRole`はTerraformの出力結果の`vpc_lambda_role_arn`に出力された値を設定する
-        4. `LambdaSubnet1`はTerraformの出力結果の`private_subnet_app_1_id`に出力された値を設定する
-        5. `LambdaSubnet2`はTerraformの出力結果の`private_subnet_app_2_id`に出力された値を設定する
+        3. `LambdaSubnet1`はTerraformの出力結果の`private_subnet_app_1_id`に出力された値を設定する
+        4. `LambdaSubnet2`はTerraformの出力結果の`private_subnet_app_2_id`に出力された値を設定する
+        5. `LambdaRole`はTerraformの出力結果の`vpc_lambda_role_arn`に出力された値を設定する
         6. `LambdaSecurityGroup`はTerraformの出力結果の`vpc_lambda_security_group_id`に出力された値を設定する
-        7. `DBHost`はTerraformの出力結果の`rds_proxy_host`に出力された値を設定する
-        8. 他の入力はデフォルトとするが、以下のようなAPIの認証がないが良いか？という確認は`y`を入力する
-            1. `GetMessages has no authentication. Is this okay?`
-            2. 関数の数だけ出力されるので、すべて`y`を入力する
+        7. `BackendBucketName`はTerraformの出力結果の`backend_bucket_name`に出力された値を設定する
+        8. `DBHost`はTerraformの出力結果の`rds_proxy_host`に出力された値を設定する
+        9. `DBUser`はTerraformの変数で指定した値を設定する
+        10. `DBPassword`はTerraformの変数で指定した値を設定する
+        11. 他の入力はデフォルトとする
 4. フロントのビルド＆デプロイ
     1. `front/.env.production`を作成し、`VUE_APP_API_URL`にAPIのエンドポイントを設定する
         1. APIのエンドポイントはSAMのデプロイの出力結果の`ProductionApi`に出力された値を設定する
     2. `cd front`
     3. `npm run build`
     4. `aws s3 sync ./dist <バケットURI> --delete`
-        1. バケットURIはTerraformの出力結果の`frontend_bucket_s3_uri`に出力された値を設定する
+        1. バケットURIはTerraformの出力結果の`frontend_bucket_uri`に出力された値を設定する
 
 ## 動作確認
 
@@ -81,6 +84,18 @@ DBはAurora MySQLを使用する。
 2. S3のバケットの中身を削除
     1. `aws s3 rm <バケットURI> --recursive`
         1. バケットURIはTerraformの出力結果の`frontend_bucket_s3_uri`に出力された値を設定する
+        2. バケットURIはTerraformの出力結果の`backend_bucket_uri`に出力された値を設定する
 3. Terraformのリソース削除
     1. `cd infra/terra`
     2. `terraform destroy --var-file main.tfvars`
+
+## TODO
+
+- [ ] Cloud Watch Logsのロググループを作成する
+- [ ] シークレットマネージャーからのDB情報の取得（ローカル時は環境変数から取得する）
+- [ ] テストコード
+- [ ] CI/CD
+- [ ] ログ出力
+- [ ] ログの集約
+- [ ] ログの可視化
+- [ ] モニタリング

@@ -16,6 +16,9 @@ Parameters:
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Description: Security Group for Lambda
+  BackendBucketName:
+    Type: String
+    Description: S3 Bucket Name for Backend
   DBHost:
     Type: String
     Description: DB Host
@@ -47,14 +50,19 @@ Globals:
         DB_HOST: !Ref DBHost
         DB_USER: !Ref DBUser
         DB_PASSWORD: !Ref DBPassword
+        BACKEND_BUCKET_NAME: !Ref BackendBucketName
 
   Api:
     TracingEnabled: true
     Cors:
-      AllowMethods: "'POST, GET, PUT, DELETE, OPTIONS'"
-      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Requested-With,X-Requested-By,X-Api-Key'"
       AllowOrigin: "'*'"
+      AllowMethods: "'*'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Requested-With,X-Requested-By'"
       AllowCredentials: "'true'"
+    Auth:
+      ApiKeyRequired: false
+    BinaryMediaTypes:
+      - 'multipart/form-data'
 
 Resources:
   GetMessages:
@@ -91,6 +99,57 @@ Resources:
           Properties:
             Path: /message
             Method: post
+  GetUploadFilesInfo:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/get_upload_files_info
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Role: !Ref LambdaRole
+      Architectures:
+        - x86_64
+      Layers:
+        - !Ref AppLayer
+      Events:
+        GetMessages:
+          Type: Api
+          Properties:
+            Path: /files
+            Method: get
+  DownloadFile:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/download_file
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Role: !Ref LambdaRole
+      Architectures:
+        - x86_64
+      Layers:
+        - !Ref AppLayer
+      Events:
+        GetMessages:
+          Type: Api
+          Properties:
+            Path: /file/{filename+}
+            Method: get
+  UploadFile:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/upload_file
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Role: !Ref LambdaRole
+      Architectures:
+        - x86_64
+      Layers:
+        - !Ref AppLayer
+      Events:
+        SaveMessage:
+          Type: Api
+          Properties:
+            Path: /file
+            Method: post
   AppLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -118,15 +177,3 @@ Outputs:
   ProductionApi:
     Description: API Gateway endpoint URL for Prod stage
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
-  GetMessagesApi:
-    Description: API Gateway endpoint URL for Prod stage for Get Messages function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/message/"
-  GetMessagesFunction:
-    Description: Get Messages Lambda Function ARN
-    Value: !GetAtt GetMessages.Arn
-  SaveMessageApi:
-    Description: API Gateway endpoint URL for Prod stage for Save Message function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/message/"
-  SaveMessageFunction:
-    Description: Save Message Lambda Function ARN
-    Value: !GetAtt SaveMessage.Arn

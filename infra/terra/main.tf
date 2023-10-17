@@ -491,6 +491,31 @@ resource "aws_iam_role" "vpc_lambda" {
   ]
 }
 
+
+resource "aws_iam_role_policy" "vpc_lambda" {
+  name = "${var.name_prefix}-vpc-lambda-policy"
+  role = aws_iam_role.vpc_lambda.id
+
+  policy = jsonencode({
+    Version   = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowS3Access"
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket"
+        ],
+        Resource = [
+          "arn:aws:s3:::${var.name_prefix}-backend-app-bucket/*",
+          "arn:aws:s3:::${var.name_prefix}-backend-app-bucket"
+        ]
+      },
+    ]
+  })
+}
+
 ##################################
 # Frontend
 ##################################
@@ -574,6 +599,12 @@ resource "aws_cloudfront_distribution" "front-app" {
   is_ipv6_enabled     = true
   comment             = "${var.name_prefix}-front-app"
   default_root_object = "index.html"
+  custom_error_response {
+    error_caching_min_ttl = 3600
+    error_code            = 404
+    response_code         = 404
+    response_page_path    = "/index.html"
+  }
 
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
@@ -897,7 +928,22 @@ output "cloud_front_url" {
   value       = "https://${aws_cloudfront_distribution.front-app.domain_name}"
 }
 
-output "frontend_bucket_s3_uri" {
-  description = "Frontend Bucket Name"
+output "frontend_bucket_uri" {
+  description = "Frontend Bucket URI"
   value       = "s3://${aws_s3_bucket.front-app.bucket}"
+}
+
+output "backend_bucket_name" {
+  description = "Backend Bucket Name"
+  value       = aws_s3_bucket.backend-app.bucket
+}
+
+output "backend_bucket_uri" {
+  description = "Backend Bucket URI"
+  value       = "s3://${aws_s3_bucket.backend-app.bucket}"
+}
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront Distribution ID"
+  value       = aws_cloudfront_distribution.front-app.id
 }

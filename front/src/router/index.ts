@@ -8,6 +8,11 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView
+    },
+    {
+      path: '/file',
+      name: 'file',
+      component: () => import('../views/FileView.vue')
     }
   ]
 })

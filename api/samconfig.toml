@@ -18,6 +18,10 @@ capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
 debug = true
+s3_prefix = "hs-api"
+region = "ap-northeast-1"
+parameter_overrides = "LambdaSubnet1=\"subnet-0fa8fab65dd37908a\" LambdaSubnet2=\"subnet-0fc63b34f84354fe0\" LambdaRole=\"arn:aws:iam::605393708398:role/hs-v-lambda-vpc-lambda-role\" LambdaSecurityGroup=\"sg-07e95b291824e7bc0\" BackendBucketName=\"hs-v-lambda-backend-app-bucket\" DBHost=\"hs-v-lambda-rds-proxy.proxy-cedrx0hhwgor.ap-northeast-1.rds.amazonaws.com\" DBUser=\"admin\" DBPassword=\"admin123\" Timeout=\"3\""
+image_repositories = []
 
 [default.package.parameters]
 resolve_s3 = true

@@ -14,6 +14,7 @@ const isLoading = ref(false)
 
 async function getMessages() {
   isLoading.value = true
+  errorMessage.value = ''
   const response = await API.get('api', '/message', {})
     .catch((err) => {
       console.log(err)
@@ -28,6 +29,7 @@ async function getMessages() {
 
 async function saveMessage() {
   isLoading.value = true
+  errorMessage.value = ''
 
   await API.post('api', '/message', { body: { message: message.value } })
     .catch((err) => {
@@ -48,6 +50,7 @@ onMounted(() => {
 
 <template>
   <main>
+    <p class="error-message">{{ errorMessage }}</p>
     <input v-model="message" class="message-input" maxlength="50" />
     <button class="save-message-btn" @click="saveMessage">保存</button>
     <div class="loader-container">
@@ -87,36 +90,6 @@ main {
   font-size: 16px;
   margin-left: 10px;
   padding: 10px 24px;
-}
-
-.loader-container {
-  height: 50px;
-}
-
-.loader {
-  display: none;
-  margin: 0 auto;
-  width: 50px;
-  padding: 8px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #25b09b;
-  --_m: conic-gradient(#0000 10%, #000), linear-gradient(#000 0 0) content-box;
-  -webkit-mask: var(--_m);
-  mask: var(--_m);
-  -webkit-mask-composite: source-out;
-  mask-composite: subtract;
-  animation: l3 1s infinite linear;
-}
-
-.loader.active {
-  display: block;
-}
-
-@keyframes l3 {
-  to {
-    transform: rotate(1turn);
-  }
 }
 
 .messages {
