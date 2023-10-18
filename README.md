@@ -19,7 +19,7 @@ DBはAurora MySQLを使用する。
     1. ローカル用にS3バケットを作成する
 4. バックエンドの起動
     1. `cd api`
-    2. `sam build`
+    2. `sam build --cached`
     3. `sam local start-api --docker-network vpc-lambda-network --parameter-overrides Timeout=10 DBHost=db DBUser=admin DBPassword=admin BackendBucketName=<ローカル用バケット名>`
         1. ファイルを編集した場合は`sam build`を実行する必要がある
         2. IDEなどのファイル監視で、`sam build`が実行されるようにすると少し楽になる
