@@ -82,6 +82,11 @@ Resources:
           Properties:
             Path: /message
             Method: get
+  GetMessagesLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${GetMessages}"
+      RetentionInDays: 90
   SaveMessage:
     Type: AWS::Serverless::Function
     Properties:
@@ -99,6 +104,11 @@ Resources:
           Properties:
             Path: /message
             Method: post
+  SaveMessageLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${SaveMessage}"
+      RetentionInDays: 90
   GetUploadFilesInfo:
     Type: AWS::Serverless::Function
     Properties:
@@ -116,6 +126,11 @@ Resources:
           Properties:
             Path: /files
             Method: get
+  GetUploadFilesInfoLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${GetUploadFilesInfo}"
+      RetentionInDays: 90
   DownloadFile:
     Type: AWS::Serverless::Function
     Properties:
@@ -133,6 +148,11 @@ Resources:
           Properties:
             Path: /file/{filename+}
             Method: get
+  DownloadFileLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${DownloadFile}"
+      RetentionInDays: 90
   UploadFile:
     Type: AWS::Serverless::Function
     Properties:
@@ -150,6 +170,11 @@ Resources:
           Properties:
             Path: /file
             Method: post
+  UploadFileLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${UploadFile}"
+      RetentionInDays: 90
   AppLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:

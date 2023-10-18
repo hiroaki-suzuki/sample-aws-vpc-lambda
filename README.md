@@ -91,7 +91,7 @@ DBはAurora MySQLを使用する。
 
 ## TODO
 
-- [ ] Cloud Watch Logsのロググループを作成する
+- [x] Cloud Watch Logsのロググループを作成する
 - [ ] シークレットマネージャーからのDB情報の取得（ローカル時は環境変数から取得する）
 - [ ] テストコード
 - [ ] CI/CD
